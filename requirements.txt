@@ -1,0 +1,16 @@
+asgiref==3.8.1                     # 최신
+Django==5.2                        # 최신
+django-cors-headers==4.3.1        # 최신은 2024-12 기준 4.3.1임
+django-mysql==4.16.0              # 최신
+djangorestframework==3.16.0       # 최신
+djangorestframework-simplejwt==5.3.1  # 최신
+python-dotenv==1.0.1              # 최신
+drf-yasg==1.21.7                  # 최신 (1.21.10은 존재하지 않음)
+gunicorn==21.2.0                  # 최신
+inflection==0.5.1                 # 최신
+packaging==24.0                   # 최신
+PyJWT==2.8.0                      # 최신
+pytz==2024.1                      # 2025.2는 아직 릴리스되지 않음
+PyYAML==6.0.1                     # 최신
+sqlparse==0.5.0                   # 최신
+uritemplate==4.1.1                # 최신
