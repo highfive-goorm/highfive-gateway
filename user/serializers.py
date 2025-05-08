@@ -2,13 +2,13 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from user.models import User
+from .models import User
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['account', 'password', 'age', 'gender', 'created_at', 'address']
+        fields = ['account', 'password', 'age', 'gender', 'created_at', 'address','name']
 
     def create(self, validated_data):
         user = User(
@@ -17,6 +17,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             gender=validated_data['gender'],
             password=make_password(validated_data['password']),
             address=validated_data['address'],
+            name=validated_data['name']
         )
 
         return user
@@ -25,7 +26,9 @@ class UserRequestSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.ModelSerializer):
     account = serializers.CharField()
     password = serializers.CharField(write_only=True)
-
+    class Meta:
+        model=User
+        fields=['account','password']
     def validate(self, attrs):
         account = attrs.get('account')
         password = attrs.get('password')
@@ -39,14 +42,15 @@ class LoginSerializer(serializers.ModelSerializer):
 
         refresh = RefreshToken.for_user(user)
         return {
+
+            'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'access': str(refresh.access_token)
         }
 
 
 class UserResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['account', 'age', 'gender', 'created_at', 'address']
+        fields = ['account', 'age', 'gender', 'created_at', 'address','name']
 
 

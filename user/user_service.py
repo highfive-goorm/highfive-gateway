@@ -1,4 +1,4 @@
-from user.serializers import UserRequestSerializer
+from .serializers import UserRequestSerializer
 
 
 def create_user(data, current_user=None):

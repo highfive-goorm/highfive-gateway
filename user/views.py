@@ -6,13 +6,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from user.models import User
-from user.serializers import LoginSerializer, UserResponseSerializer
-from user.user_service import create_user
+from .models import User
+from .serializers import LoginSerializer, UserResponseSerializer
+from .user_service import create_user
 
 
 class UserResponse:
-    def __init__(self,account,age,gender,address,created_at):
+    def __init__(self,account,age,gender,address,created_at,name):
 
         self.account=account
         self.age = age
@@ -20,6 +20,7 @@ class UserResponse:
         self.address=gender
         self.address = address
         self.created_at = created_at
+        self.name=name
 
 
 class UserView(APIView):

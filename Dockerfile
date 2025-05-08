@@ -19,16 +19,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 RUN pip install --no-cache-dir --upgrade pip setuptools
 RUN pip install --no-cache-dir --upgrade pip mysqlclient==2.2.0
 # 프로젝트 소스 복사
-COPY .. .
+COPY . .
 
 # 포트 설정
 EXPOSE 8000
 
 # 서버 실행 명령
 CMD ["gunicorn", "highfive_back.wsgi:application", "--bind", "0.0.0.0:8000"]
-
-
-
-
-
-

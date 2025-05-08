@@ -113,7 +113,7 @@ DATABASES = {
         'NAME': os.environ.get('DATABASE_NAME'),
         'USER': os.environ.get('DATABASE_USER'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': 'host.docker.internal',  # 도커 컨테이너명 또는 localhost
+        'HOST': 'localhost',  # 도커 컨테이너명 또는 localhost
         'PORT': 3306
     }
 }
