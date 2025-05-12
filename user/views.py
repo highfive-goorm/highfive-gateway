@@ -7,20 +7,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import User
-from .serializers import LoginSerializer, UserResponseSerializer
+from .serializers import LoginSerializer, UserResponseSerializer, AccountSerializer
 from .user_service import create_user
 
 
 class UserResponse:
-    def __init__(self,account,age,gender,address,created_at,name):
-
-        self.account=account
+    def __init__(self, account, age, gender, address, created_at, name):
+        self.account = account
         self.age = age
-        self.gender=gender
-        self.address=gender
+        self.gender = gender
+        self.address = gender
         self.address = address
         self.created_at = created_at
-        self.name=name
+        self.name = name
 
 
 class UserView(APIView):
@@ -76,6 +75,8 @@ class UserView(APIView):
             return Response({"message": "삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             return Response({"message": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -84,7 +85,20 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
+
 class UserCheckView(APIView):
     permission_classes = [AllowAny]
-    def post(self,request):
-        serializer= AccountSerializer(data=request.data)
+
+    def post(self, request):
+        serializer = AccountSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        account = serializer.validated_data.get('account')
+
+        # account 중복 여부 확인
+        if User.objects.filter(account=account).exists():
+            return Response({"exists": True}, status=status.HTTP_409_CONFLICT)
+        else:
+            return Response({"exists": False}, status=status.HTTP_200_OK)

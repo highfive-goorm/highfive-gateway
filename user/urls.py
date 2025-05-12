@@ -21,7 +21,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import UserView, LoginView
+from .views import UserView, LoginView, UserCheckView
 
 urlpatterns = [
     path('login', LoginView.as_view(), name='login'),  # 로그인
