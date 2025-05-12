@@ -22,5 +22,6 @@ from .views import ProductProxyView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user', include('user.urls')),
-    path('product/<int:id>',ProductProxyView.as_view,name='product')
+    path('product/',ProductProxyView.as_view,name='product'),
+
 ]
