@@ -1,27 +1,29 @@
-from django.contrib.auth.hashers import make_password
-from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+# gateway/user/serializers.py
 
+from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 
-
 class UserRequestSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
     class Meta:
         model = User
-        fields = ['account', 'password', 'age', 'gender', 'created_at', 'address']
+        fields = ['user_id', 'account', 'password', 'age', 'gender', 'created_at', 'address', 'name']
+        read_only_fields = ['user_id', 'created_at']
 
     def create(self, validated_data):
         user = User(
             account=validated_data['account'],
-            age=validated_data['age'],
-            gender=validated_data['gender'],
+            age=validated_data.get('age', 0),
+            gender=validated_data.get('gender', ''),
             password=make_password(validated_data['password']),
-            address=validated_data['address'],
-            name=validated_data['name']
+            address=validated_data.get('address', ''),
+            name=validated_data.get('name')  # name 없어도 None 저장
         )
-
+        user.save()
         return user
-
 
 class LoginSerializer(serializers.ModelSerializer):
     account = serializers.CharField()
@@ -44,17 +46,16 @@ class LoginSerializer(serializers.ModelSerializer):
 
         refresh = RefreshToken.for_user(user)
         return {
-
             'access': str(refresh.access_token),
             'refresh': str(refresh),
+            'user_id': str(user.user_id),  # 반환에 user_id 포함!
+            'account': user.account,
         }
-
 
 class UserResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['account', 'age', 'gender', 'created_at', 'address', 'name']
-
+        fields = ['user_id', 'account', 'age', 'gender', 'created_at', 'address', 'name']
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
