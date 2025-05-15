@@ -26,6 +26,6 @@ from .views import UserView, LoginView, UserCheckView
 urlpatterns = [
     path('login', LoginView.as_view(), name='login'),  # 로그인
     path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),  # access 토큰 갱신
-    path('', UserView.as_view(),name='user_create'),  #회원가입
+    path('<int:id>', UserView.as_view()),  #회원가입
     path('check-duplicate',UserCheckView.as_view())
 ]

@@ -25,17 +25,6 @@ class UserResponse:
 class UserView(APIView):
     permission_classes = [AllowAny]
 
-    def get_permissions(self):
-        if self.request.method == 'POST':
-            return [AllowAny()]
-        elif self.request.method == 'GET':
-            return [IsAuthenticated()]
-        elif self.request.method == 'PUT':
-            return [IsAuthenticated()]
-        elif self.request.method == 'DELETE':
-            return [IsAuthenticated()]
-        return super().get_permissions()
-
     # ✅ POST: 회원 가입
     def post(self, request):
         if not User.objects.filter(account=request.data['account']).exists():

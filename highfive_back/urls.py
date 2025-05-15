@@ -15,13 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
-from .views import ProductProxyView
+from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView #AlertProxyView
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('user', include('user.urls')),
-    path('product/',ProductProxyView.as_view,name='product'),
-
+urlpatterns = [  # POST /product, GET /product?name=
+    path('product', ProductProxyView.as_view()),
+    path('product/<str:id>', ProductProxyView.as_view()),
+    path('admin/', AdminView.as_view()),
+    path('user/', include('user.urls')),
+    path('order/<str:is_from_cart>/', OrderProxyView.as_view()),
+    path('order', OrderProxyView.as_view()),
+    path('cart', CartProxyView.as_view()),
+    path('cart/<str:user_id>/', CartProxyView.as_view()),
+    path('cart/<str:user_id>/<str:product_id>/', CartProxyView.as_view()),
+    #path('alert/', AlertProxyView.as_view()),
+    #path('alert/<int:id>/', AlertProxyView.as_view()),
 ]
