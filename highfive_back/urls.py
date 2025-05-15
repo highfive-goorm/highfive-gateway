@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 
-from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView #AlertProxyView
+from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView , AlertProxyView
 
 urlpatterns = [  # POST /product, GET /product?name=
     path('product', ProductProxyView.as_view()),
@@ -29,6 +29,6 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('cart', CartProxyView.as_view()),
     path('cart/<str:user_id>/', CartProxyView.as_view()),
     path('cart/<str:user_id>/<str:product_id>/', CartProxyView.as_view()),
-    #path('alert/', AlertProxyView.as_view()),
-    #path('alert/<int:id>/', AlertProxyView.as_view()),
+    path('alert/', AlertProxyView.as_view()),
+    path('alert/<int:id>/', AlertProxyView.as_view()),
 ]

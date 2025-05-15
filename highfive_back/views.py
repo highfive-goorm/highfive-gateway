@@ -201,7 +201,8 @@ class CartProxyView(View):
         if resp.status_code == 204:
             return HttpResponse(status=204)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
-
+class AlertProxyView(View):
+    pass
 # urls.py 매핑 예시
 # from django.urls import path
 # from .views import ProductProxyView, OrderProxyView, CartProxyView
