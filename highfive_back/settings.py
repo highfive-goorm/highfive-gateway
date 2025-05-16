@@ -115,11 +115,11 @@ WSGI_APPLICATION = 'highfive_back.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'high-five',
-        'USER': 'root',
-        'PASSWORD': 'ingyu497@@',
-        'HOST': 'host.docker.internal',  # 도커 컨테이너명 또는 localhost
-        'PORT': 3306
+        'NAME':     os.getenv('DATABASE_NAME'),
+        'USER':     os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST':     os.getenv('DATABASE_HOST'),
+        'PORT':     os.getenv('DATABASE_PORT', '3306'),
     }
 }
 
