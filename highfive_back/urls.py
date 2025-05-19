@@ -21,14 +21,14 @@ from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView , 
 
 urlpatterns = [  # POST /product, GET /product?name=
     path('product', ProductProxyView.as_view()),
-    path('product/<str:id>', ProductProxyView.as_view()),
+    path('product/<int:id>', ProductProxyView.as_view()),
     path('admin/', AdminView.as_view()),
     path('user', include('user.urls')),
     path('order/<str:is_from_cart>/', OrderProxyView.as_view()),
     path('order', OrderProxyView.as_view()),
     path('cart', CartProxyView.as_view()),
-    path('cart/<str:user_id>/', CartProxyView.as_view()),
-    path('cart/<str:user_id>/<str:product_id>/', CartProxyView.as_view()),
+    path('cart/<str:user_id>', CartProxyView.as_view()),
+    path('cart/<str:user_id>/<str:product_id>', CartProxyView.as_view()),
     path('alert/', AlertProxyView.as_view()),
     path('alert/<int:id>/', AlertProxyView.as_view()),
 ]

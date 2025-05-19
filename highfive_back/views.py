@@ -11,48 +11,9 @@ class AdminView(View):
 @method_decorator(csrf_exempt, name="dispatch")
 class ProductProxyView(View):
     BASE_URL = "http://product:8001/product"
-
-    def get(self, request):
-        # 1) 쿼리 파라미터 꺼내기
-        params = request.GET.dict()
-        product_id = params.pop("id", None)
-        name = params.pop("name", None)
-
-        # 2) 호출할 URL 결정
-        if product_id:
-            url = f"{self.BASE_URL}/{product_id}"
-            query = {}  # id는 URL에 넣었으니 params 비움
-        else:
-            url = self.BASE_URL
-            # name이 있으면 name만, 없으면 빈 dict → 전체 리스트
-            query = {"name": name} if name else {}
-
-        # 3) 외부 서비스 호출
-        try:
-            resp = requests.get(url, params=query, timeout=self.TIMEOUT)
-            resp.raise_for_status()
-        except requests.RequestException as e:
-            return JsonResponse(
-                {"error": f"상품 서비스 호출 실패: {e}"},
-                status=502
-            )
-
-        # 4) JSON 파싱 시도
-        try:
-            data = resp.json()
-        except ValueError:
-            # JSON이 아니면 그대로 바이너리/텍스트 반환
-            ct = resp.headers.get("Content-Type", "application/octet-stream")
-            if "charset" not in ct.lower():
-                ct += "; charset=utf-8"
-            return HttpResponse(resp.content, status=resp.status_code, content_type=ct)
-
-        # 5) JsonResponse 생성
-        safe = not isinstance(data, list)
-        return JsonResponse(data, safe=safe, status=resp.status_code)
     def get(self, request, id=None):
         # 1) URL 결정: 단일 조회 vs. 전체 리스트
-        if id:
+        if id is not None:
             url = f"{self.BASE_URL}/{id}"
         else:
             url = self.BASE_URL
