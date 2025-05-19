@@ -2,8 +2,11 @@
 
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
+
 
 class UserRequestSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -25,13 +28,27 @@ class UserRequestSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+class CustomRefreshToken(RefreshToken):
+    @classmethod
+    def for_user(cls, user):
+        token = super().for_user(user)
+        # USER_ID_CLAIM 자리에 UUID 대신 문자열을 넣음
+        token[api_settings.USER_ID_CLAIM] = str(getattr(user, api_settings.USER_ID_FIELD))
+        return token
+
+
+
 class LoginSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField(read_only=True)
     account = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
+
+
     class Meta:
         model = User
-        fields = ['account', 'password']
+        fields = ['account', 'password','user_id']
 
     def validate(self, attrs):
         account = attrs.get('account')
@@ -44,18 +61,21 @@ class LoginSerializer(serializers.ModelSerializer):
         if not user.check_password(password):
             raise serializers.ValidationError("비밀번호가 일치하지 않습니다.")
 
-        refresh = RefreshToken.for_user(user)
+        refresh=CustomRefreshToken.for_user(user)
         return {
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-            'user_id': str(user.user_id),  # 반환에 user_id 포함!
-            'account': user.account,
+            "access": str(refresh.access_token),
+            "refresh":str(refresh),
+            "account":user.account,
+            "user_id":user.user_id
+
         }
+
 
 class UserResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['user_id', 'account', 'age', 'gender', 'created_at', 'address', 'name']
+
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:

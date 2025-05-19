@@ -15,3 +15,4 @@ PyYAML==6.0.1                     # 최신
 sqlparse==0.5.0                   # 최신
 uritemplate==4.1.1               # 최신
 requests>=2.28.0
+psycopg>=3.2.5

@@ -23,7 +23,7 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('product', ProductProxyView.as_view()),
     path('product/<str:id>', ProductProxyView.as_view()),
     path('admin/', AdminView.as_view()),
-    path('user/', include('user.urls')),
+    path('user', include('user.urls')),
     path('order/<str:is_from_cart>/', OrderProxyView.as_view()),
     path('order', OrderProxyView.as_view()),
     path('cart', CartProxyView.as_view()),

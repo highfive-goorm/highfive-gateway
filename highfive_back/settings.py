@@ -29,9 +29,9 @@ DEBUG = True
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_CREDENTIALS = True
-
+load_dotenv(BASE_DIR / '.env')
 # Application definition
-
+AUTH_USER_MODEL = 'user.User'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,13 +47,20 @@ INSTALLED_APPS = [
     'corsheaders',
     'gunicorn',
     'user',
+    'psycopg',
+
 ]
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
+    # 사용자 모델의 PK 필드 이름 (UUIDField라면 'id' 혹은 'user_id')
+    'USER_ID_FIELD': 'user_id',
+    # 페이로드에 들어갈 클레임 이름
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': lambda user: True
+    # 토큰 발급 시 사용할 시리얼라이저
 }
-
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
@@ -114,12 +121,12 @@ WSGI_APPLICATION = 'highfive_back.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':     os.getenv('DATABASE_NAME'),
-        'USER':     os.getenv('DATABASE_USER'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'HOST':     os.getenv('DATABASE_HOST'),
-        'PORT':     os.getenv('DATABASE_PORT', '3306'),
+        'ENGINE':   'django.db.backends.postgresql',
+        'NAME':     os.getenv('DB_NAME'),
+        'USER':     os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST':     os.getenv('DB_HOST'),
+        'PORT':     os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -163,5 +170,3 @@ STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
