@@ -4,13 +4,18 @@ from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+
+
 @method_decorator(csrf_exempt, name="dispatch")
 class AdminView(View):
     pass
+
+
 # CSRF exempt for internal microservice proxy
 @method_decorator(csrf_exempt, name="dispatch")
 class ProductProxyView(View):
     BASE_URL = "http://product:8001/product"
+
     def get(self, request, id=None):
         # 1) URL 결정: 단일 조회 vs. 전체 리스트
         if id is not None:
@@ -70,6 +75,8 @@ class ProductProxyView(View):
                 status=resp.status_code,
                 content_type=resp.headers.get("Content-Type", "application/octet-stream")
             )
+
+
 @method_decorator(csrf_exempt, name="dispatch")
 class OrderProxyView(View):
     BASE_URL = "http://order:8004/order"
@@ -113,6 +120,7 @@ class OrderProxyView(View):
         if resp.status_code == 204:
             return HttpResponse(status=204)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class CartProxyView(View):
@@ -162,6 +170,8 @@ class CartProxyView(View):
         if resp.status_code == 204:
             return HttpResponse(status=204)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
+
+
 class AlertProxyView(View):
     pass
 # urls.py 매핑 예시
