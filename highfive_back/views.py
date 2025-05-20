@@ -126,17 +126,22 @@ class OrderProxyView(View):
 class CartProxyView(View):
     BASE_URL = "http://cart:8002/cart"
 
-    def post(self, request, user_id=None, product_id=None):
-        if not user_id:
-            return JsonResponse({"error": "user_id required"}, status=400)
-        path = f"/{user_id}"
-        url = f"{self.BASE_URL}{path}"
+    def post(self, request, user_id):
+        # 1) load the raw JSON from the incoming Django request
         try:
-            payload = json.loads(request.body)
+            payload = json.loads(request.body.decode('utf-8'))
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        resp = requests.post(url, json=payload)
-        return JsonResponse(resp.json(), safe=False, status=resp.status_code)
+            return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+        # 2) forward as JSON to your cart service
+        resp = requests.post(
+            f"http://cart:8002/cart/{user_id}",
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=5
+        )
+
+        return JsonResponse(resp.json(), status=resp.status_code)
 
     def get(self, request, user_id=None, product_id=None):
         if not user_id:
