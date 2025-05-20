@@ -153,17 +153,49 @@ class CartProxyView(View):
         resp = requests.get(url, params=request.GET)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
-    def put(self, request, user_id=None, product_id=None,quantity=None):
+    def put(self, request, user_id=None, product_id=None):
+        # 1) 필수 파라미터 체크
         if not user_id or not product_id:
-            return JsonResponse({"error": "user_id and product_id required"}, status=400)
-        url = f"{self.BASE_URL}/{user_id}/{product_id}"
+            return JsonResponse(
+                {"error": "user_id and product_id required"},
+                status=400
+            )
+
+        # 2) JSON 파싱 ({"quantity": N})
         try:
-            data = json.loads(request.body)
+            payload = json.loads(request.body)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
-        resp = requests.put(url, json=data.quantity)
-        return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
+        # 3) Cart 서비스에 PUT 요청
+        url = f"{self.BASE_URL}/{user_id}/{product_id}"
+        try:
+            resp = requests.put(
+                url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=5
+            )
+        except requests.RequestException as e:
+            return JsonResponse(
+                {"error": f"Cart service error: {e}"},
+                status=502
+            )
+
+        # 4) FastAPI가 200 OK로 전체 카트를 반환하면 그대로 JSON 리턴
+        if resp.status_code == 200:
+            try:
+                data = resp.json()   # ← 반드시 호출
+            except ValueError:
+                return HttpResponse(status=502)
+            return JsonResponse(data, safe=False, status=200)
+
+        # 5) 422 등 에러 바디가 있으면 그대로 리턴
+        try:
+            data = resp.json()
+            return JsonResponse(data, safe=False, status=resp.status_code)
+        except ValueError:
+            return HttpResponse(status=resp.status_code)
     def delete(self, request, user_id=None, product_id=None):
         if not user_id:
             return JsonResponse({"error": "user_id required"}, status=400)
