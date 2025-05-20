@@ -38,17 +38,14 @@ class CustomRefreshToken(RefreshToken):
         return token
 
 
-
 class LoginSerializer(serializers.ModelSerializer):
-    user_id = serializers.UUIDField(read_only=True)
+    #user_id = serializers.UUIDField(read_only=True)
     account = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
-
-
     class Meta:
         model = User
-        fields = ['account', 'password','user_id']
+        fields = ['account', 'password']
 
     def validate(self, attrs):
         account = attrs.get('account')
@@ -61,12 +58,12 @@ class LoginSerializer(serializers.ModelSerializer):
         if not user.check_password(password):
             raise serializers.ValidationError("비밀번호가 일치하지 않습니다.")
 
-        refresh=CustomRefreshToken.for_user(user)
+        refresh = CustomRefreshToken.for_user(user)
         return {
             "access": str(refresh.access_token),
-            "refresh":str(refresh),
-            "account":user.account,
-            "user_id":user.user_id
+            "refresh": str(refresh),
+            "account": user.account,
+            "user_id": user.user_id
 
         }
 

@@ -87,10 +87,5 @@ class UserCheckView(APIView):
 
     def post(self, request):
         serializer = AccountSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        account = serializer.validated_data.get('account')
-        if User.objects.filter(account=account).exists():
-            return Response({"exists": True}, status=status.HTTP_409_CONFLICT)
-        else:
-            return Response({"exists": False}, status=status.HTTP_200_OK)
+
+        return Response({"exists": not serializer.is_valid()})
