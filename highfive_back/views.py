@@ -153,7 +153,7 @@ class CartProxyView(View):
         resp = requests.get(url, params=request.GET)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
-    def put(self, request, user_id=None, product_id=None):
+    def put(self, request, user_id=None, product_id=None,quantity=None):
         if not user_id or not product_id:
             return JsonResponse({"error": "user_id and product_id required"}, status=400)
         url = f"{self.BASE_URL}/{user_id}/{product_id}"
@@ -161,7 +161,7 @@ class CartProxyView(View):
             data = json.loads(request.body)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
-        resp = requests.put(url, json=data)
+        resp = requests.put(url, json=data.quantity)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
     def delete(self, request, user_id=None, product_id=None):
