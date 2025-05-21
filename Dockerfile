@@ -7,10 +7,13 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     build-essential \
     gcc \
+    tzdata \
+    && ln -snf /usr/share/zoneinfo/Asia/Seoul /etc/localtime \
+    && echo "Asia/Seoul" > /etc/timezone \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 작업 디렉터리 설정
-WORKDIR .
+WORKDIR /app
 
 # requirements.txt 복사 및 의존성 설치
 COPY requirements.txt .
