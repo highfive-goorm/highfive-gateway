@@ -13,9 +13,15 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from shared.logging_config import configure_logging
+
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+configure_logging(log_file=str(LOG_DIR / "user_service.log"))
 
 APPEND_SLASH=False
 # Quick-start development settings - unsuitable for production
@@ -80,6 +86,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'shared.request_logging_middleware.RequestLoggingMiddleware',
     
 ]
 from corsheaders.defaults import default_headers
