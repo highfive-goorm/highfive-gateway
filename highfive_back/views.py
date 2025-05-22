@@ -112,15 +112,41 @@ class OrderProxyView(View):
     BASE_URL = "http://order:8004/order"
 
     def get(self, request, user_id=None):
-        if user_id:
-            url = f"{self.BASE_URL}/{user_id}"
-            resp = requests.get(url, params=request.GET)
-        else:
-            url = f"{self.BASE_URL}"
-            resp = requests.get(url, params=request.GET)
+        # 1) URL 결정
+        url = f"{self.BASE_URL}/{user_id}" if user_id else self.BASE_URL
+        resp = requests.get(url, params=request.GET)
 
-        is_list = isinstance(resp, list)
-        return JsonResponse(is_list, safe=is_list, status=resp.status_code)
+        # 2) HTTP 오류 체크
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # 하위 서비스가 4xx/5xx를 보내면 그대로 전달
+            return JsonResponse(
+                {"error": str(e)}, status=resp.status_code
+            )
+
+        # 3) 빈 바디(204 등) 처리
+        if not resp.text:
+            return JsonResponse({}, status=resp.status_code)
+
+        # 4) Content-Type 검사
+        content_type = resp.headers.get("Content-Type", "")
+        if "application/json" not in content_type:
+            # JSON 아닌 경우
+            return JsonResponse(
+                {"error": f"Invalid Content-Type: {content_type}"},
+                status=502
+            )
+
+        # 5) JSON 파싱
+        try:
+            data = resp.json()
+        except ValueError:
+            # 파싱 실패 시 빈 JSON 객체로 대응
+            return JsonResponse({}, status=502)
+
+        # 6) 리스트인지 판단해서 safe 파라미터 결정
+        return JsonResponse(data, safe=False, status=resp.status_code)
 
     def post(self, request,*args,**kwargs):
         # is_from_cart 경로 파라미터가 들어올 수도 있음
