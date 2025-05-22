@@ -14,6 +14,8 @@ from .serializers import (
     AccountSerializer,
 )
 
+import logging
+logger = logging.getLogger()  # settings.py 에서 붙여둔 핸들러(파일+콘솔)를 그대로 사용합니다.
 
 def create_user(data):
     serializer = UserRequestSerializer(data=data)
@@ -34,12 +36,18 @@ class UserView(APIView):
 
     # POST /user/ (회원가입)
     def post(self, request):
+        # 회원가입 시도 로그
+        logger.info(f"create_user_start\taccount={request.data.get('account','')}")
         if User.objects.filter(account=request.data.get('account', '')).exists():
+            logger.warning(f"create_user_failed\treason=duplicate_account\taccount={request.data.get('account','')}")
             return Response(
                 {"message": "중복 됩니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         user = create_user(request.data)
+        logger.info(f"create_user_success\tuser_id={user.user_id}\taccount={user.account}")
+
         serializer = UserResponseSerializer(user)
         return Response(
             serializer.data,
@@ -63,9 +71,13 @@ class UserView(APIView):
 
     # PUT /user/<uuid:user_id> (수정)
     def put(self, request, user_id):
+        # 수정 시도 로그
+        logger.info(f"update_user_start\tuser_id={user_id}\tupdate_fields={list(request.data.keys())}")
+
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
+            logger.error(f"update_user_failed\treason=not_found\tuser_id={user_id}")
             return Response(
                 {"message": "사용자를 찾을 수 없습니다."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -79,10 +91,13 @@ class UserView(APIView):
         serializer = UserResponseSerializer(user, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            logger.info(f"update_user_success\tuser_id={user_id}\tchanged_fields={list(data.keys())}")
             return Response(
                 serializer.data,
                 status=status.HTTP_200_OK,
             )
+
+        logger.error(f"update_user_failed\terrors={serializer.errors}\tuser_id={user_id}")
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
@@ -111,8 +126,12 @@ class LoginView(APIView):
 
     # POST /login/ (로그인)
     def post(self, request):
+        # 로그인 시도 로그
+        logger.info(f"login_start\taccount={request.data.get('account','')}")
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # 로그인 성공 로그
+        logger.info(f"login_success\tuser_id={serializer.validated_data.get('user_id')}")
         return Response(
             serializer.validated_data,
             status=status.HTTP_200_OK,

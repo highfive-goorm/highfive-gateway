@@ -86,7 +86,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'shared.request_logging_middleware.RequestLoggingMiddleware',
+    # 'shared.request_logging_middleware.RequestLoggingMiddleware',
     
 ]
 from corsheaders.defaults import default_headers
