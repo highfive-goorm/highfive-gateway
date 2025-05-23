@@ -41,6 +41,8 @@ class AdminView(View):
                 status=resp.status_code,
                 content_type=resp.headers.get("Content-Type", "application/octet-stream")
             )
+
+
 # CSRF exempt for internal microservice proxy
 @method_decorator(csrf_exempt, name="dispatch")
 class ProductProxyView(View):
@@ -148,7 +150,7 @@ class OrderProxyView(View):
         # 6) 리스트인지 판단해서 safe 파라미터 결정
         return JsonResponse(data, safe=False, status=resp.status_code)
 
-    def post(self, request,*args,**kwargs):
+    def post(self, request, *args, **kwargs):
         # is_from_cart 경로 파라미터가 들어올 수도 있음
         url = f"{self.BASE_URL}"
         try:
@@ -166,6 +168,7 @@ class OrderProxyView(View):
                 status=resp.status_code,
                 content_type=resp.headers.get("Content-Type", "application/octet-stream")
             )
+
     def put(self, request, id=None, *args, **kwargs):
         if not id:
             return JsonResponse({"error": "Order id required"}, status=400)
@@ -208,14 +211,17 @@ class CartProxyView(View):
 
         return JsonResponse(resp.json(), status=resp.status_code)
 
-    def get(self, request, user_id=None, product_id=None):
+    def get(self, request, user_id=None):
         if not user_id:
             return JsonResponse({"error": "user_id required"}, status=400)
-        path = f"/{user_id}"
-        if product_id:
-            path += f"/{product_id}"
-        url = f"{self.BASE_URL}{path}"
-        resp = requests.get(url, params=request.GET)
+        url = f"{self.BASE_URL}/{user_id}"
+        resp = requests.get(
+            url=url,
+            json=request.GET.dict(),
+            params=request.GET,
+            timeout=10
+        )
+
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
     def put(self, request, user_id=None, product_id=None):
@@ -274,6 +280,7 @@ class CartProxyView(View):
             return HttpResponse(status=204)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
+
 @method_decorator(csrf_exempt, name="dispatch")
 class RecommendProxyView(View):
     BASE_URL = "http://recommend:8007/recommend"
@@ -307,8 +314,112 @@ class RecommendProxyView(View):
         # 3) JsonResponse 생성 (dict이므로 safe=True)
         return JsonResponse(payload, safe=True, status=resp.status_code)
 
+
 class AlertProxyView(View):
-    pass
+    BASE_URL = "http://alert:8005/alert"  # alert 서비스 호스트:포트/경로
+
+    def post(self, request):
+        # 1) 입력 JSON 파싱
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError:
+            return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+        # 2) alert 서비스에 POST 요청
+        try:
+            resp = requests.post(
+                self.BASE_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=5
+            )
+        except requests.RequestException as e:
+            return JsonResponse({"error": f"Alert service error: {e}"}, status=502)
+
+        # 3) 응답 JSON 파싱
+        try:
+            data = resp.json()
+        except ValueError:
+            return HttpResponse(status=502)
+
+        return JsonResponse(data,
+                            safe=isinstance(data, list),
+                            status=resp.status_code)
+
+    def get(self, request, alert_id=None):
+        # 경로 구성
+        url = f"{self.BASE_URL}/{alert_id}" if alert_id else self.BASE_URL
+
+        # alert 서비스 GET 요청
+        try:
+            resp = requests.get(url, params=request.GET, timeout=5)
+        except requests.RequestException as e:
+            return JsonResponse({"error": f"Alert service error: {e}"}, status=502)
+
+        # JSON 파싱
+        try:
+            data = resp.json()
+        except ValueError:
+            return HttpResponse(status=502)
+
+        return JsonResponse(data,
+                            safe=isinstance(data, list),
+                            status=resp.status_code)
+
+    def put(self, request, alert_id=None):
+        # alert_id 필수 체크
+        if not alert_id:
+            return JsonResponse({"error": "alert_id required"}, status=400)
+
+        # JSON 파싱
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        # alert 서비스에 PUT 요청
+        try:
+            resp = requests.put(
+                f"{self.BASE_URL}/{alert_id}",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=5
+            )
+        except requests.RequestException as e:
+            return JsonResponse({"error": f"Alert service error: {e}"}, status=502)
+
+        # JSON 파싱
+        try:
+            data = resp.json()
+        except ValueError:
+            return HttpResponse(status=502)
+
+        return JsonResponse(data,
+                            safe=isinstance(data, list),
+                            status=resp.status_code)
+
+    def delete(self, request, alert_id=None):
+        # alert_id 필수 체크
+        if not alert_id:
+            return JsonResponse({"error": "alert_id required"}, status=400)
+
+        # DELETE 요청
+        try:
+            resp = requests.delete(f"{self.BASE_URL}/{alert_id}", timeout=5)
+        except requests.RequestException as e:
+            return JsonResponse({"error": f"Alert service error: {e}"}, status=502)
+
+        # 204 No Content
+        if resp.status_code in (200, 204):
+            return HttpResponse(status=resp.status_code)
+
+        # 에러 바디 JSON 파싱
+        try:
+            data = resp.json()
+            return JsonResponse(data, safe=False, status=resp.status_code)
+        except ValueError:
+            return HttpResponse(status=resp.status_code)
+
 # urls.py 매핑 예시
 # from django.urls import path
 # from .views import ProductProxyView, OrderProxyView, CartProxyView
