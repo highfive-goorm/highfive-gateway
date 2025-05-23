@@ -274,6 +274,38 @@ class CartProxyView(View):
             return HttpResponse(status=204)
         return JsonResponse(resp.json(), safe=False, status=resp.status_code)
 
+@method_decorator(csrf_exempt, name="dispatch")
+class RecommendProxyView(View):
+    BASE_URL = "http://recommend:8007/recommend"
+
+    def get(self, request, user_id):
+        # 1) 내부 recommend 서비스 호출 (/recommend/{user_id}?top_n=n)
+        try:
+            resp = requests.get(
+                f"{self.BASE_URL}/{user_id}",
+                params=request.GET.dict(),
+                timeout=10
+            )
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            return JsonResponse(
+                {"error": f"Recommend 서비스 요청 실패: {e}"},
+                status=502
+            )
+
+        # 2) JSON 파싱
+        try:
+            payload = resp.json()
+        except ValueError:
+            # JSON이 아닐 경우 원본 바이트/텍스트 그대로 반환
+            return HttpResponse(
+                resp.content,
+                status=resp.status_code,
+                content_type=resp.headers.get("Content-Type", "application/octet-stream")
+            )
+
+        # 3) JsonResponse 생성 (dict이므로 safe=True)
+        return JsonResponse(payload, safe=True, status=resp.status_code)
 
 class AlertProxyView(View):
     pass
