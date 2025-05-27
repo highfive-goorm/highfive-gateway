@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from shared.logging_config import configure_logging
 
 load_dotenv()
@@ -34,8 +34,7 @@ SECRET_KEY = 'django-insecure-=#ztpi!p#7h6ud@omrn$yjd%jxp(__+1*+0wew+55g!(^%wsfd
 DEBUG = True
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ["*"]
-CORS_ALLOW_CREDENTIALS = True
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(find_dotenv(usecwd=True))
 # Application definition
 AUTH_USER_MODEL = 'user.User'
 INSTALLED_APPS = [
