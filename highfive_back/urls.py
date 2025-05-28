@@ -17,11 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 
-from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView , AlertProxyView, RecommendProxyView
+from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView, AlertProxyView, RecommendProxyView, \
+    LikeProxyView, BrandLikeProxyView
 
 urlpatterns = [  # POST /product, GET /product?name=
     path('product', ProductProxyView.as_view()),
     path('product/<int:id>', ProductProxyView.as_view()),
+    path('product/like/count/<str:user_id>', LikeProxyView.as_view()),
+    path('product/<int:id>/like', LikeProxyView.as_view()),
+    path('product/<int:id>/like/<str:user_id>', LikeProxyView.as_view()),
+    path('brand/like/count/<str:user_id>', BrandLikeProxyView.as_view()),
+    path('brand/<int:id>/like', BrandLikeProxyView.as_view()),
+    path('brand/<int:id>/like/<str:user_id>', BrandLikeProxyView.as_view()),
     path('admin', AdminView.as_view()),
     path('user', include('user.urls')),
     path('order', OrderProxyView.as_view()),
