@@ -43,6 +43,77 @@ class AdminView(View):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class LikeProxyView(View):
+    BASE_URL = 'http://product:8001/product'
+
+    def post(self, request, id):
+        url = f'{self.BASE_URL}/{id}/like'
+        try:
+            payload = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        resp = requests.post(url, json=payload)
+        try:
+            data = resp.json()
+            safe = not isinstance(data, list)
+            return JsonResponse(data, safe=safe, status=resp.status_code)
+        except ValueError:
+            return HttpResponse(
+                resp.content,
+                status=resp.status_code,
+                content_type=resp.headers.get("Content-Type", "application/octet-stream")
+            )
+
+    def delete(self, request, id, user_id):
+        if not id:
+            return JsonResponse({"error": "Product id required"}, status=400)
+        url = f"{self.BASE_URL}/{id}/like/{user_id}"
+        resp = requests.delete(url)
+        if resp.status_code == 204:
+            return HttpResponse(status=204)
+        return JsonResponse(resp.json(), safe=False, status=resp.status_code)
+
+    def get(self, request, user_id):
+        # 1) URL 결정: 단일 조회 vs. 전체 리스트
+
+        url = f"{self.BASE_URL}/like/count/{user_id}"
+
+        # 2) 외부 서비스 호출
+        try:
+            # request.GET.dict()로 QueryDict → 일반 dict 변환
+            resp = requests.get(url, params=request.GET, timeout=100)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            return JsonResponse(
+                {"error": f"상품 서비스 요청 실패: {e}"},
+                status=502
+            )
+
+        # 3) JSON 파싱을 시도
+        try:
+            payload = resp.json()
+        except ValueError:
+            # JSON이 아니면 바이너리/텍스트 그대로 반환
+            return HttpResponse(
+                resp.content,
+                status=resp.status_code,
+                content_type=resp.headers.get(
+                    "Content-Type",
+                    "application/octet-stream"
+                )
+            )
+
+        # 4) JsonResponse 생성
+        #    - payload가 list면 safe=False, dict면 safe=True
+        is_list = isinstance(payload, list)
+        return JsonResponse(
+            payload,
+            safe=not is_list,
+            status=resp.status_code
+        )
+
+
 # CSRF exempt for internal microservice proxy
 @method_decorator(csrf_exempt, name="dispatch")
 class ProductProxyView(View):
@@ -107,6 +178,65 @@ class ProductProxyView(View):
                 status=resp.status_code,
                 content_type=resp.headers.get("Content-Type", "application/octet-stream")
             )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class BrandLikeProxyView(View):
+    BASE_URL = 'http://product:8001/brand'
+
+    def post(self, request, id):
+        """브랜드 좋아요"""
+        url = f'{self.BASE_URL}/{id}/like'
+        try:
+            payload = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        resp = requests.post(url, json=payload)
+        try:
+            data = resp.json()
+            safe = not isinstance(data, list)
+            return JsonResponse(data, safe=safe, status=resp.status_code)
+        except ValueError:
+            return HttpResponse(
+                resp.content,
+                status=resp.status_code,
+                content_type=resp.headers.get("Content-Type", "application/octet-stream")
+            )
+
+    def delete(self, request, id, user_id):
+        """브랜드 좋아요 취소"""
+        if not id:
+            return JsonResponse({"error": "Brand id required"}, status=400)
+        url = f'{self.BASE_URL}/{id}/like/{user_id}'
+        resp = requests.delete(url)
+        if resp.status_code in (200, 204):
+            return HttpResponse(status=resp.status_code)
+        # JSON 오류날 수도 있으니 safe=False
+        return JsonResponse(resp.json(), safe=False, status=resp.status_code)
+
+    def get(self, request, user_id):
+        """사용자가 좋아요한 브랜드 리스트 조회"""
+        # QueryDict → dict
+        params = request.GET.dict()
+        url = f'{self.BASE_URL}/like/count/{user_id}'
+        try:
+            resp = requests.get(url, params=params, timeout=100)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            return JsonResponse(
+                {"error": f"브랜드 서비스 요청 실패: {e}"},
+                status=502
+            )
+        try:
+            payload = resp.json()
+        except ValueError:
+            return HttpResponse(
+                resp.content,
+                status=resp.status_code,
+                content_type=resp.headers.get("Content-Type", "application/octet-stream")
+            )
+        is_list = isinstance(payload, list)
+        return JsonResponse(payload, safe=not is_list, status=resp.status_code)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
