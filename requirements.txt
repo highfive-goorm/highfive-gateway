@@ -12,6 +12,7 @@ packaging==24.0                   # 최신
 PyJWT==2.8.0                      # 최신
 pytz==2024.1                      # 2025.2는 아직 릴리스되지 않음
 PyYAML==6.0.1                     # 최신
+setuptools
 sqlparse==0.5.0                   # 최신
 uritemplate==4.1.1               # 최신
 requests>=2.28.0
