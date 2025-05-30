@@ -17,6 +17,8 @@ class User(models.Model):
     address = models.TextField(max_length=1000)
     name = models.CharField(max_length=100, blank=True, null=True)  # name은 Optional
 
+    REQUIRED_FIELDS = []
+
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
 
@@ -32,7 +34,7 @@ class User(models.Model):
         return True
 
     @property
-    def is_annonymous(self):
+    def is_anonymous(self):
         return False
 
     def set_unusable_password(self):

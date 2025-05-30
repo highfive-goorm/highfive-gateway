@@ -36,7 +36,7 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('cart', CartProxyView.as_view()),
     path('cart/<str:user_id>', CartProxyView.as_view()),
     path('cart/<str:user_id>/<str:product_id>', CartProxyView.as_view()),
-    path('alert/', AlertProxyView.as_view()),
-    path('alert/<int:id>/', AlertProxyView.as_view()),
+    path('alert', AlertProxyView.as_view()),
+    path('alert/<int:id>', AlertProxyView.as_view()),
     path('recommend/<str:user_id>', RecommendProxyView.as_view()),
 ]
