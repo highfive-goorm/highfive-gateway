@@ -1,16 +1,17 @@
 import json
-from typing import Dict
-
 import requests
+import os
+from typing import Dict
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
+print("PRODUCT_BASE_URL:", os.environ["PRODUCT_BASE_URL"])
 
 @method_decorator(csrf_exempt, name="dispatch")
 class AdminView(View):
-    BASE_URL = 'http://admin:8003/admin'
+    BASE_URL = os.environ["ADMIN_BASE_URL"]
 
     def post(self, request):
         # 1) 요청 body를 JSON으로 파싱
@@ -45,7 +46,7 @@ class AdminView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LikeProxyView(View):
-    BASE_URL = 'http://product:8001/product'
+    BASE_URL = os.environ["PRODUCT_BASE_URL"]
 
     def post(self, request, id):
         url = f'{self.BASE_URL}/{id}/like'
@@ -117,7 +118,7 @@ class LikeProxyView(View):
 # CSRF exempt for internal microservice proxy
 @method_decorator(csrf_exempt, name="dispatch")
 class ProductProxyView(View):
-    BASE_URL = "http://product:8001/product"
+    BASE_URL = os.environ["PRODUCT_BASE_URL"]
 
     def get(self, request, id=None):
         # 1) URL 결정: 단일 조회 vs. 전체 리스트
@@ -182,7 +183,7 @@ class ProductProxyView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class BrandLikeProxyView(View):
-    BASE_URL = 'http://product:8001/brand'
+    BASE_URL = os.environ["BRAND_BASE_URL"]
 
     def post(self, request, id):
         """브랜드 좋아요"""
@@ -241,7 +242,7 @@ class BrandLikeProxyView(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class OrderProxyView(View):
-    BASE_URL = "http://order:8004/order"
+    BASE_URL = os.environ["ORDER_BASE_URL"]
 
     def get(self, request, user_id=None):
         # 1) URL 결정
@@ -322,7 +323,7 @@ class OrderProxyView(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class CartProxyView(View):
-    BASE_URL = "http://cart:8002/cart"
+    BASE_URL = os.environ["CART_BASE_URL"]
 
     def post(self, request, user_id):
         # 1) load the raw JSON from the incoming Django request
@@ -333,7 +334,7 @@ class CartProxyView(View):
 
         # 2) forward as JSON to your cart service
         resp = requests.post(
-            f"http://cart:8002/cart/{user_id}",
+            f"{self.BASE_URL}/{user_id}",
             json=payload,
             headers={"Content-Type": "application/json"},
             timeout=5
@@ -413,7 +414,7 @@ class CartProxyView(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class RecommendProxyView(View):
-    BASE_URL = "http://recommend:8007/recommend"
+    BASE_URL = os.environ["RECOMMEND_BASE_URL"]
 
     def get(self, request, user_id):
         # 1) 내부 recommend 서비스 호출 (/recommend/{user_id}?top_n=n)
@@ -446,7 +447,7 @@ class RecommendProxyView(View):
 
 
 class AlertProxyView(View):
-    BASE_URL = "http://alert:8005/alert"  # alert 서비스 호스트:포트/경로
+    BASE_URL = os.environ["ALERT_BASE_URL"]  # alert 서비스 호스트:포트/경로
 
     def post(self, request):
         # 1) 입력 JSON 파싱
@@ -549,19 +550,3 @@ class AlertProxyView(View):
             return JsonResponse(data, safe=False, status=resp.status_code)
         except ValueError:
             return HttpResponse(status=resp.status_code)
-
-# urls.py 매핑 예시
-# from django.urls import path
-# from .views import ProductProxyView, OrderProxyView, CartProxyView
-# urlpatterns = [
-#     # Product
-#     path('product/', ProductProxyView.as_view()),
-#     path('product/<str:id>/', ProductProxyView.as_view()),
-#     # Order
-#     path('gateway/order/', OrderProxyView.as_view()),
-#     path('gateway/order/<str:is_from_cart>/', OrderProxyView.as_view()),
-#     path('gateway/order/<str:id>/', OrderProxyView.as_view()),
-#     # Cart
-#     path('gateway/cart/<str:user_id>/', CartProxyView.as_view()),
-#     path('gateway/cart/<str:user_id>/<str:product_id>/', CartProxyView.as_view()),
-# ]

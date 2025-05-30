@@ -2,8 +2,8 @@
     FROM python:3.12-slim AS builder
 
     # 작업 환경 설정
-    ENV PYTHONDONTWRITEBYTECODE 1
-    ENV PYTHONUNBUFFERED 1
+    ENV PYTHONDONTWRITEBYTECODE=1
+    ENV PYTHONUNBUFFERED=1
     
     # 시스템 패키지 설치 (빌드용 - PostgreSQL 클라이언트 빌드에 필요)
     RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,8 +34,8 @@
     FROM python:3.12-slim AS runtime
     
     # 작업 환경 설정
-    ENV PYTHONDONTWRITEBYTECODE 1
-    ENV PYTHONUNBUFFERED 1
+    ENV PYTHONDONTWRITEBYTECODE=1
+    ENV PYTHONUNBUFFERED=1
     ENV TZ=Asia/Seoul
     
     # 시스템 패키지 설치 (런타임용 - 실제 DB 연결에 필요한 라이브러리)
