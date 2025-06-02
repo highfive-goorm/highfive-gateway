@@ -39,4 +39,5 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('alert', AlertProxyView.as_view()),
     path('alert/<int:id>', AlertProxyView.as_view()),
     path('recommend/<str:user_id>', RecommendProxyView.as_view()),
+    path('ht/', include('health_check.urls')),
 ]

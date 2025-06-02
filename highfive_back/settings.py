@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'gunicorn',
     'user',
     'psycopg',
+    'health_check',
 
 ]
 SIMPLE_JWT = {
