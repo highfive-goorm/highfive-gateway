@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView, AlertProxyView, RecommendProxyView, \
-    LikeProxyView, BrandLikeProxyView
+    LikeProxyView, BrandLikeProxyView, TrackingProxyView, PromotionProxyView
 
 urlpatterns = [  # POST /product, GET /product?name=
     path('product', ProductProxyView.as_view()),
@@ -40,4 +40,10 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('alert/<int:id>', AlertProxyView.as_view()),
     path('recommend/<str:user_id>', RecommendProxyView.as_view()),
     path('ht/', include('health_check.urls')),
+    # Tracking Service
+    path('tracking/log/event', TrackingProxyView.as_view(), name='tracking_log_event'),
+    # Promotion Service (Simplified URLs)
+    path('promotion/active', PromotionProxyView.as_view(), {'action': 'active'}, name='promotion_active_list'),  # GET
+    path('promotion', PromotionProxyView.as_view(), name='promotion_create'),  # POST
+    path('promotion/<str:promotion_id>', PromotionProxyView.as_view(), name='promotion_detail_manage'),  # GET, PATCH, DELETE
 ]
