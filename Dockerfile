@@ -38,10 +38,11 @@
     ENV PYTHONUNBUFFERED=1
     ENV TZ=Asia/Seoul
     
-    # 시스템 패키지 설치 (런타임용 - 실제 DB 연결에 필요한 라이브러리)
+    # 시스템 패키지 설치 (런타임용 - 실제 DB 연결에 필요한 라이브러리 및 curl)
     RUN apt-get update && apt-get install -y --no-install-recommends \
         libpq5 \
         tzdata \
+        curl \
         && rm -rf /var/lib/apt/lists/*
     
     WORKDIR /app
@@ -56,13 +57,12 @@
     ENV PATH="/opt/venv/bin:$PATH"
     
     # (선택 사항, 권장) Non-root user 설정
-    # RUN useradd --system --create-home appuser && \
-    #     chown -R appuser:appuser /app /opt/venv
-    # USER appuser
+    RUN useradd --system --create-home appuser && \
+        chown -R appuser:appuser /app /opt/venv
+    USER appuser
     
     # 포트 설정
     EXPOSE 8000
     
     # 서버 실행 명령
-    # CMD ["gunicorn", "highfive_back.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"] # workers 수는 CPU 코어 수에 맞게 조절
     CMD ["gunicorn", "highfive_back.wsgi:application", "--bind", "0.0.0.0:8000"]
