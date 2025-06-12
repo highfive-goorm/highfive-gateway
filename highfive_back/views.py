@@ -558,7 +558,6 @@ PROMOTION_SERVICE_BASE_URL_FROM_ENV = os.environ.get("PROMOTION_SERVICE_BASE_URL
 @method_decorator(csrf_exempt, name="dispatch")
 class PromotionProxyView(View):
     BASE_URL = PROMOTION_SERVICE_BASE_URL_FROM_ENV
-    SERVICE_PATH_PREFIX = "/promotion" # FastAPI 서비스의 기본 경로 접두사
 
     def get(self, request, promotion_id=None, action=None):
         if not self.BASE_URL:
@@ -570,11 +569,11 @@ class PromotionProxyView(View):
         if action == "active":
             # Gateway URL: /promotion/active/
             # Downstream URL: {BASE_URL}/promotion/active/
-            url = f"{self.BASE_URL.rstrip('/')}{self.SERVICE_PATH_PREFIX}/active/"
+            url = f"{self.BASE_URL.rstrip('/')}/active"
         elif promotion_id:
             # Gateway URL: /promotion/<promotion_id>/
             # Downstream URL: {BASE_URL}/promotion/<promotion_id>
-            url = f"{self.BASE_URL.rstrip('/')}{self.SERVICE_PATH_PREFIX}/{promotion_id}"
+            url = f"{self.BASE_URL.rstrip('/')}/{promotion_id}"
         # FastAPI 서비스에는 현재 GET /promotion/ (전체 목록) 엔드포인트가 정의되어 있지 않습니다.
         # 만약 해당 기능이 필요하다면 FastAPI 서비스에 추가 후 여기에 로직을 반영해야 합니다.
         else:
