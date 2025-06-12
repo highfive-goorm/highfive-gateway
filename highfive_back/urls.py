@@ -31,8 +31,9 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('brand/<int:id>/like/<str:user_id>', BrandLikeProxyView.as_view()),
     path('admin', AdminView.as_view()),
     path('user', include('user.urls')),
-    path('order', OrderProxyView.as_view()),
-    path('order/<str:user_id>',OrderProxyView.as_view()),
+    path('order', OrderProxyView.as_view()), # POST (주문 생성)
+    path('order/<str:id>', OrderProxyView.as_view()), # GET (단일 주문), PUT, DELETE
+    path('order/user/<str:user_id>', OrderProxyView.as_view()), # GET (사용자별 주문 목록)
     path('cart', CartProxyView.as_view()),
     path('cart/<str:user_id>', CartProxyView.as_view()),
     path('cart/<str:user_id>/<str:product_id>', CartProxyView.as_view()),
