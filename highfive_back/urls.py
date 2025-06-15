@@ -27,7 +27,7 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('product/<int:id>/like', LikeProxyView.as_view()),
     path('product/<int:id>/like/<str:user_id>', LikeProxyView.as_view()),
     path('brand/like/count/<str:user_id>', BrandLikeProxyView.as_view()),
-    path('brand/<int:id>/like', BrandLikeProxyView.as_view()),
+    path('brand/<int:id>/like', BrandLikeProxyView.as_view()), # POST
     path('brand/<int:id>/like/<str:user_id>', BrandLikeProxyView.as_view()),
     path('admin', AdminView.as_view()),
     path('user', include('user.urls')),
@@ -47,4 +47,7 @@ urlpatterns = [  # POST /product, GET /product?name=
     path('promotion/active', PromotionProxyView.as_view(), {'action': 'active'}, name='promotion_active_list'),  # GET
     path('promotion', PromotionProxyView.as_view(), name='promotion_create'),  # POST
     path('promotion/<str:promotion_id>', PromotionProxyView.as_view(), name='promotion_detail_manage'),  # GET, PATCH, DELETE
+    # KakaoPay Order Endpoints
+    path('payment/kakao/ready', OrderProxyView.as_view(), name='kakao_payment_ready'), # POST
+    path('payment/kakao/approve', OrderProxyView.as_view(), name='kakao_payment_approve'), # POST
 ]

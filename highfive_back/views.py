@@ -243,8 +243,12 @@ class OrderProxyView(View):
     BASE_URL = os.environ["ORDER_BASE_URL"]
 
     def get(self, request, user_id=None):
-        # 1) URL 결정
-        url = f"{self.BASE_URL}/{user_id}" if user_id else self.BASE_URL
+        # user_id가 있는 경우 (GET /order/user/{user_id})
+        if not user_id:
+            # 이 경우는 urls.py 설정상 호출되지 않아야 함 (또는 다른 GET 경로가 있다면 추가 로직 필요)
+            return JsonResponse({"error": "user_id is required for this endpoint"}, status=400)
+        
+        url = f"{self.BASE_URL.rstrip('/')}/order/{user_id}"
         resp = requests.get(url, params=request.GET)
 
         # 2) HTTP 오류 체크
@@ -280,13 +284,24 @@ class OrderProxyView(View):
         return JsonResponse(data, safe=False, status=resp.status_code)
 
     def post(self, request, *args, **kwargs):
-        # is_from_cart 경로 파라미터가 들어올 수도 있음
-        url = f"{self.BASE_URL}"
+        request_path = request.path_info
+        downstream_service_path = ""
+
+        if request_path == '/order':
+            downstream_service_path = "/order"
+        elif request_path == '/payment/kakao/ready':
+            downstream_service_path = "/payment/kakao/ready" # 주문 서비스 내부 경로에서 /api 제거
+        elif request_path == '/payment/kakao/approve':
+            downstream_service_path = "/payment/kakao/approve" # 주문 서비스 내부 경로에서 /api 제거
+        else:
+            return JsonResponse({"error": "Invalid POST path for order/payment service"}, status=404)
+
+        url = f"{self.BASE_URL.rstrip('/')}{downstream_service_path}"
         try:
             payload = json.loads(request.body)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
-        resp = requests.post(url, json=payload)
+        resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
         try:
             data = resp.json()
             safe = not isinstance(data, list)
@@ -301,7 +316,7 @@ class OrderProxyView(View):
     def put(self, request, id=None, *args, **kwargs):
         if not id:
             return JsonResponse({"error": "Order id required"}, status=400)
-        url = f"{self.BASE_URL}/{id}"
+        url = f"{self.BASE_URL.rstrip('/')}/order/{id}"
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
@@ -312,7 +327,7 @@ class OrderProxyView(View):
     def delete(self, request, id=None, *args, **kwargs):
         if not id:
             return JsonResponse({"error": "Order id required"}, status=400)
-        url = f"{self.BASE_URL}/{id}"
+        url = f"{self.BASE_URL.rstrip('/')}/order/{id}"
         resp = requests.delete(url)
         if resp.status_code == 204:
             return HttpResponse(status=204)
