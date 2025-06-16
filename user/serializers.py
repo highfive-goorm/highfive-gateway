@@ -19,11 +19,11 @@ class UserRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User(
             account=validated_data['account'],
-            age=validated_data.get('age', 0),
+            age=validated_data.get('age'),
             gender=validated_data.get('gender', ''),
             password=make_password(validated_data['password']),
             address=validated_data.get('address', ''),
-            name=validated_data.get('name')  # name 없어도 None 저장
+            name=validated_data.get('name')
         )
         user.save()
         return user

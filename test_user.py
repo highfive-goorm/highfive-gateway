@@ -7,7 +7,7 @@ from user.models import User
 class UserAPITestCase(APITestCase):
 
     def setUp(self):
-        self.signup_url = reverse('user_create')  # 예: path("user/signup/", views.SignUpView, name="user-signup")
+        self.signup_url = reverse('user-create')
         self.login_url = reverse('login')    # 예: path("user/login/", views.LoginView, name="user-login")
 
         self.signup_data = {
@@ -30,10 +30,8 @@ class UserAPITestCase(APITestCase):
 
     def test_user_signup(self):
         response = self.client.post(self.signup_url, self.signup_data, format='json')
-        print("응답 코드:", response.status_code)
-        print("응답 내용:", response.data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(User.objects.filter(account="testuser").exists(), False)
+        self.assertEqual(User.objects.filter(account="testuser").exists(), True)
 
     def test_user_login_success(self):
         response = self.client.post(self.login_url, {
@@ -49,4 +47,3 @@ class UserAPITestCase(APITestCase):
             "password": "wrongpass"
         }, format='json')
         self.assertEqual(response.status_code, 400)
-

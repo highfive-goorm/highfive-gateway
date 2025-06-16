@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from shared.logging_config import configure_logging
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ENV_PATH = BASE_DIR.parent / ".env"  # highfive-back/ 상위에 .env라면
+ENV_PATH = BASE_DIR / ".env"  # highfive-gateway/ 디렉토리 내 .env
 load_dotenv(dotenv_path=ENV_PATH)
 
 LOG_DIR = BASE_DIR / "logs"
@@ -112,11 +112,11 @@ WSGI_APPLICATION = 'highfive_back.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql',
-        'NAME':     os.getenv('DB_NAME'),
-        'USER':     os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST':     os.getenv('DB_HOST'),
-        'PORT':     os.getenv('DB_PORT', 5432),
+        'NAME':     os.getenv('PG_NAME', os.getenv('DB_NAME')),
+        'USER':     os.getenv('PG_USER', os.getenv('DB_USER')),
+        'PASSWORD': os.getenv('PG_PASSWORD', os.getenv('DB_PASSWORD')),
+        'HOST':     os.getenv('PG_HOST', os.getenv('DB_HOST')),
+        'PORT':     os.getenv('PG_PORT', os.getenv('DB_PORT', 5432)),
     }
 }
 
@@ -146,7 +146,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'Asia/Seoul'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 

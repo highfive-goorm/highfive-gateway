@@ -567,9 +567,6 @@ class AlertProxyView(View):
 # 환경 변수에서 Promotion Service 기본 URL 로드
 PROMOTION_SERVICE_BASE_URL_FROM_ENV = os.environ.get("PROMOTION_SERVICE_BASE_URL")
 
-# PROMOTION_SERVICE_BASE_URL_FROM_ENV는 프로모션 FastAPI 서비스의 루트 URL을 가리켜야 합니다.
-# 예: http://localhost:8009 또는 Docker 환경의 경우 http://promotion-service:8009
-# PromotionProxyView는 이 BASE_URL에 '/promotion/' 등을 추가하여 실제 서비스 엔드포인트를 호출합니다.
 @method_decorator(csrf_exempt, name="dispatch")
 class PromotionProxyView(View):
     BASE_URL = PROMOTION_SERVICE_BASE_URL_FROM_ENV
@@ -578,28 +575,14 @@ class PromotionProxyView(View):
         if not self.BASE_URL:
             return JsonResponse({"error": "Promotion service URL not configured"}, status=503)
 
-        # URL 경로 조합: BASE_URL + SERVICE_PATH_PREFIX + (action or promotion_id)
-        # 예: http://localhost:8009/promotion/active/
-        # 예: http://localhost:8009/promotion/<promotion_id>
         if action == "active":
-            # Gateway URL: /promotion/active/
-            # Downstream URL: {BASE_URL}/promotion/active/
             url = f"{self.BASE_URL.rstrip('/')}/active"
         elif promotion_id:
-            # Gateway URL: /promotion/<promotion_id>/
-            # Downstream URL: {BASE_URL}/promotion/<promotion_id>
             url = f"{self.BASE_URL.rstrip('/')}/{promotion_id}"
-        # FastAPI 서비스에는 현재 GET /promotion/ (전체 목록) 엔드포인트가 정의되어 있지 않습니다.
-        # 만약 해당 기능이 필요하다면 FastAPI 서비스에 추가 후 여기에 로직을 반영해야 합니다.
         else:
             return JsonResponse({"error": "Invalid GET path for promotion service. Use /active/ or /<promotion_id>."}, status=404)
 
-        # 필요한 헤더 (기존 코드 스타일 참고)
         headers = {"Accept": "application/json"}
-        # auth_header = request.headers.get('Authorization')
-        # if auth_header:
-        #     headers['Authorization'] = auth_header
-        # 필요한 다른 X-Custom-Header 등도 여기서 추가 가능
 
         try:
             resp = requests.get(url, params=request.GET.dict(), headers=headers, timeout=10) # 타임아웃 증가

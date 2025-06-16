@@ -141,7 +141,7 @@ class LoginView(APIView):
 class UserCheckView(APIView):
     permission_classes = [AllowAny]
 
-    # POST /user/check/ (계정 중복 확인)
+    # POST /user/check-duplicate (계정 중복 확인)
     def post(self, request):
         serializer = AccountSerializer(data=request.data)
         return Response(
