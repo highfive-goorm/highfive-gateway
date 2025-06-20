@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from shared.logging_config import configure_logging
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ENV_PATH = BASE_DIR / ".env"  # highfive-gateway/ 디렉토리 내 .env
+ENV_PATH = BASE_DIR / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
 
 LOG_DIR = BASE_DIR / "logs"
