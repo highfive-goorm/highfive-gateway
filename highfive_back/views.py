@@ -287,11 +287,11 @@ class OrderProxyView(View):
         request_path = request.path_info
         downstream_service_path = ""
 
-        if request_path == '/order':
+        if request_path.endswith('/order'):
             downstream_service_path = "/order"
-        elif request_path == '/payment/kakao/ready':
+        elif request_path.endswith('/payment/kakao/ready'):
             downstream_service_path = "/payment/kakao/ready" # 주문 서비스 내부 경로에서 /api 제거
-        elif request_path == '/payment/kakao/approve':
+        elif request_path.endswith('/payment/kakao/approve'):
             downstream_service_path = "/payment/kakao/approve" # 주문 서비스 내부 경로에서 /api 제거
         else:
             return JsonResponse({"error": "Invalid POST path for order/payment service"}, status=404)
