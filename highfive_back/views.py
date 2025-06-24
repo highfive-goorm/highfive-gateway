@@ -288,7 +288,7 @@ class OrderProxyView(View):
         downstream_service_path = ""
 
         if request_path.endswith('/order'):
-            downstream_service_path = "/order"
+            downstream_service_path = ""
         elif request_path.endswith('/payment/kakao/ready'):
             downstream_service_path = "/payment/kakao/ready" # 주문 서비스 내부 경로에서 /api 제거
         elif request_path.endswith('/payment/kakao/approve'):
