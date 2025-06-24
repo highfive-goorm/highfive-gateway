@@ -248,7 +248,7 @@ class OrderProxyView(View):
             # 이 경우는 urls.py 설정상 호출되지 않아야 함 (또는 다른 GET 경로가 있다면 추가 로직 필요)
             return JsonResponse({"error": "user_id is required for this endpoint"}, status=400)
         
-        url = f"{self.BASE_URL.rstrip('/')}/order/{user_id}"
+        url = f"{self.BASE_URL.rstrip('/')}/{user_id}"
         resp = requests.get(url, params=request.GET)
 
         # 2) HTTP 오류 체크
@@ -288,7 +288,7 @@ class OrderProxyView(View):
         downstream_service_path = ""
 
         if request_path.endswith('/order'):
-            downstream_service_path = ""
+            downstream_service_path = "/order"
         elif request_path.endswith('/payment/kakao/ready'):
             downstream_service_path = "/payment/kakao/ready" # 주문 서비스 내부 경로에서 /api 제거
         elif request_path.endswith('/payment/kakao/approve'):
