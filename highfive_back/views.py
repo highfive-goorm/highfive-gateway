@@ -7,6 +7,15 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
+def test_exception_view(request):
+    # 의도적으로 파이썬 예외를 발생시킵니다.
+    # 이 예외는 Django에 의해 처리되지 않으므로 500 Internal Server Error를 반환하고,
+    # django-prometheus가 이 예외를 감지할 것입니다.
+    raise ValueError("This is a test exception to trigger Prometheus metrics.")
+    
+    # 이 코드는 실행되지 않습니다.
+    return HttpResponse("You won't see this.")
+
 @method_decorator(csrf_exempt, name="dispatch")
 class AdminView(View):
     BASE_URL = os.environ["ADMIN_BASE_URL"]

@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django_prometheus import exports
-
+from . import views
 from .views import AdminView, ProductProxyView, OrderProxyView, CartProxyView, AlertProxyView, RecommendProxyView, \
     LikeProxyView, BrandLikeProxyView, TrackingProxyView, PromotionProxyView
 
 urlpatterns = [
+    path('test-error/', views.test_exception_view, name='test_exception_view'),
     path("metrics", exports.ExportToDjangoView, name="prometheus-django-metrics"),
     path('product', ProductProxyView.as_view(), name='product-list-create'),
     path('product/<int:id>', ProductProxyView.as_view(), name='product-detail'),
